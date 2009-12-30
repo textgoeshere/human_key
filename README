@@ -1,0 +1,47 @@
+It can be easy to confuse 0 with O, 1 with l etc.
+
+HumanKey generates secret random keys that don't contain these confusing characters.
+
+This reduces human error, especially if the secret key is likely to spoken or transcribed to paper.
+
+Usage
+=====
+
+Textgoeshere::HumanKey.generate
+# => "4fg7-hkq9-2dfg-m6vx"
+
+Options
+=======
+
+HumanKey.generate accepts a hash of options:
+
+length
+------
+
+Length of key to return excluding splitter characters. Ignored if :key option is supplied. Default 12.
+
+key
+---
+
+By default, HumanKey uses Digest::Sha1.hexdigest to generate a raw key, but you can supply your own via :key. Using a multibyte key in Ruby 1.8 may have nast side effects. 
+
+splitter
+--------
+
+To make it easier to read, key can be split into segements joined by a splitter character e.g. "4f67-xx75". Key will not be split if this is false. Default "-"
+
+segment_length
+--------------
+
+Length of segment to split key into. Ignored if splitter is false. Key will not be split if segment length is greater than key length. The last segment will contain fewer characters
+if segment length is not perfect factor of key length e.g.
+
+Textgoeshere::HumanKey.generate(:length => 5, :segment_length => 2)
+# => "x2-69-q"
+
+Default 4.
+
+prefix, suffix
+--------------
+
+Pass in a prefix or suffix to the key (insertion takes place after splitting). This is useful if, for example, you want every key to start with a customer reference. Default nil.
