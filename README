@@ -4,6 +4,8 @@ HumanKey generates secret random keys that don't contain these confusing charact
 
 This reduces human error, especially if the secret key is likely to spoken or transcribed to paper.
 
+*** HumanKey is for disposable, low-value keys or uids. HumanKey should not be used if you require proper secure crypto. ***
+
 Usage
 =====
 

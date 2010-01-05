@@ -4,7 +4,9 @@ require 'digest/sha1'
 # other characters. The new string will never contain 0, O, 1, l and other characters that look similar to non-techies in
 # common typefaces.
 #
-# Useful for API keys, one-time access keys, confirmation links etc. especially where the key may have to be spoken.
+# Useful for API keys, one-time access keys, confirmation links etc. especially where the key may have to be spoken. See the README.
+#
+# Don't use it if security is critical.
 
 module Textgoeshere
   class HumanKey
@@ -34,6 +36,8 @@ module Textgoeshere
       @original_key = @options[:key] || hex_key
       chars_size    = @options[:chars].size
 
+      raise "HumanKey cannot generate a key of length #{@options[:length]} from shorter original key of length #{@original_key.size}" if @options[:length] > @original_key.size
+
       @key = @original_key.scan(/./).inject("") do |m, c|
         i = ((i || rand(chars_size)) + c.to_i(16)) % chars_size
         m << @options[:chars][i]
@@ -51,7 +55,7 @@ module Textgoeshere
     private
 
     def hex_key
-      Digest::SHA1.hexdigest(Time.now.to_s + rand(SEED).to_s)[1..@options[:length]]
+      Digest::SHA1.hexdigest(Time.now.to_s + rand(SEED).to_s)[0..@options[:length] -1]
     end
   end
 end
@@ -88,26 +92,32 @@ if __FILE__ == $0
 
     def test_too_short_for_splitting
       splitter = "#"
-      assert_no_match(/#{splitter}/, Textgoeshere::HumanKey.generate(:splitter => splitter, :key => "foo", :segement_length => 99),
-             "It should not split the key into segments if the segment length is greater than the key length")
+      assert_no_match(/#{splitter}/, Textgoeshere::HumanKey.generate(:splitter => splitter, :segment_length => Textgoeshere::HumanKey::DEFAULT_OPTIONS[:length] + 1),
+              "It should not split the key into segments if the segment length is greater than the key length")
     end
 
     def test_prefix
       prefix = "a_prefix"
       assert_match(/^#{prefix}/, Textgoeshere::HumanKey.generate(:prefix => prefix),
-                   "It should prepend an optional prefix")
+              "It should prepend an optional prefix")
     end
 
     def test_suffix
       suffix = "a_suffix"
       assert_match(/#{suffix}$/, Textgoeshere::HumanKey.generate(:suffix => suffix),
-                   "It should append an optional suffix")
+              "It should append an optional suffix")
     end
 
     def test_default_original_key
       original_key = "123"
-      assert_equal(Textgoeshere::HumanKey.new(:key => original_key).original_key, original_key,
-             "It should use an optional original key parameter")
+      assert_equal(Textgoeshere::HumanKey.new(:key => original_key, :length => original_key.size).original_key, original_key,
+              "It should use an optional original key parameter")
+    end
+
+    def test_original_key_too_short_for_length
+      assert_raise(RuntimeError, "It should raise an error if the original key is shorter than the requested length") do
+        Textgoeshere::HumanKey.generate(:length => 1000)
+      end
     end
   end
   
