@@ -1,3 +1,11 @@
+NOTE
+====
+
+This library is no longer maintained.
+
+USAGE
+=====
+
 It can be easy to confuse 0 with O, 1 with l etc.
 
 HumanKey generates secret random keys that don't contain these confusing characters.
